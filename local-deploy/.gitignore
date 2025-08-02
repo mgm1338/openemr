@@ -1,0 +1,16 @@
+# Local deployment files that should not be committed
+*.log
+*.env.local
+.env
+logs/
+data/
+backups/
+
+# Docker-related files that might be generated
+.docker/
+docker-compose.override.yml
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store

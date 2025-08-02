@@ -1,0 +1,95 @@
+version: '3.1'
+
+# Local development deployment for OpenEMR
+# This file is designed to not conflict with project updates
+# Based on the official development-easy setup but customized for local use
+
+services:
+  mysql-local:
+    restart: always
+    image: mariadb:11.4
+    container_name: openemr-mysql-local
+    command: ['mariadbd','--character-set-server=utf8mb4']
+    ports:
+      - "3307:3306"  # Different port to avoid conflicts
+    volumes:
+      - mysql-local-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: openemr_root_2024
+      MYSQL_DATABASE: openemr
+      MYSQL_USER: openemr
+      MYSQL_PASSWORD: openemr_pass_2024
+    networks:
+      - openemr-local-net
+
+  openemr-local:
+    restart: always
+    image: openemr/openemr:flex
+    container_name: openemr-app-local
+    ports:
+      - "8080:80"    # HTTP on 8080
+      - "8443:443"   # HTTPS on 8443
+    volumes:
+      - ..:/openemr:ro
+      - ..:/var/www/localhost/htdocs/openemr:rw
+      - assets-local:/var/www/localhost/htdocs/openemr/public/assets:rw
+      - themes-local:/var/www/localhost/htdocs/openemr/public/themes:rw
+      - sites-local:/var/www/localhost/htdocs/openemr/sites:rw
+      - nodemodules-local:/var/www/localhost/htdocs/openemr/node_modules:rw
+      - vendor-local:/var/www/localhost/htdocs/openemr/vendor:rw
+      - logs-local:/var/log
+    environment:
+      MYSQL_HOST: mysql-local
+      MYSQL_ROOT_PASS: openemr_root_2024
+      MYSQL_USER: openemr
+      MYSQL_PASS: openemr_pass_2024
+      OE_USER: admin
+      OE_PASS: admin123
+      EASY_DEV_MODE: "yes"
+      EASY_DEV_MODE_NEW: "yes"
+      DEVELOPER_TOOLS: "yes"
+      OPENEMR_DOCKER_ENV_TAG: local-dev-environment
+      OPENEMR_SETTING_site_addr_oath: 'https://localhost:8443'
+      OPENEMR_SETTING_rest_api: 1
+      OPENEMR_SETTING_rest_fhir_api: 1
+      OPENEMR_SETTING_rest_portal_api: 1
+    depends_on:
+      - mysql-local
+    networks:
+      - openemr-local-net
+
+  phpmyadmin-local:
+    restart: always
+    image: phpmyadmin:latest
+    container_name: openemr-phpmyadmin-local
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql-local
+      PMA_USER: openemr
+      PMA_PASSWORD: openemr_pass_2024
+    depends_on:
+      - mysql-local
+    networks:
+      - openemr-local-net
+
+volumes:
+  mysql-local-data:
+    name: openemr-mysql-local-data
+  assets-local:
+    name: openemr-assets-local
+  themes-local:
+    name: openemr-themes-local
+  sites-local:
+    name: openemr-sites-local
+  nodemodules-local:
+    name: openemr-nodemodules-local
+  vendor-local:
+    name: openemr-vendor-local
+  logs-local:
+    name: openemr-logs-local
+
+networks:
+  openemr-local-net:
+    name: openemr-local-network
+    driver: bridge
