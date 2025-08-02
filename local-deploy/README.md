@@ -5,13 +5,17 @@ This directory contains scripts and configuration files for deploying OpenEMR lo
 ## Quick Start
 
 ```bash
-# Start the local deployment
+# 1. Copy environment file and customize passwords
+cp .env.example .env
+# Edit .env with your preferred passwords and ports
+
+# 2. Start the local deployment
 ./deploy.sh start
 
-# Access OpenEMR at:
-# - HTTP: http://localhost:8080
-# - HTTPS: https://localhost:8443
-# - phpMyAdmin: http://localhost:8081
+# 3. Access OpenEMR at:
+# - HTTP: http://localhost:8080 (or your custom HTTP_PORT)
+# - HTTPS: https://localhost:8443 (or your custom HTTPS_PORT)  
+# - phpMyAdmin: http://localhost:8081 (or your custom PHPMYADMIN_PORT)
 ```
 
 ## Features
@@ -33,11 +37,25 @@ This directory contains scripts and configuration files for deploying OpenEMR lo
 ./deploy.sh build     # Build OpenEMR assets only
 ```
 
-## Default Credentials
+## Configuration
 
-- **OpenEMR Admin**: admin / admin123
-- **Database**: openemr / openemr_pass_2024
-- **phpMyAdmin**: openemr / openemr_pass_2024
+### Environment Variables
+
+The deployment uses `.env` files for configuration. Copy the example files and customize:
+
+```bash
+# Development environment
+cp .env.example .env
+
+# Production-like environment  
+cp .env.production.example .env.production
+```
+
+### Default Credentials (if no .env file)
+
+- **OpenEMR Admin**: admin / admin_password
+- **Database**: openemr / openemr_user_pass
+- **phpMyAdmin**: openemr / openemr_user_pass
 
 ## Port Configuration
 

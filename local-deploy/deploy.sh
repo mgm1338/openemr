@@ -46,7 +46,12 @@ check_docker() {
 
 # Function to check if ports are available
 check_ports() {
-    local ports=("8080" "8443" "8081" "3307")
+    # Load environment variables if .env exists
+    if [ -f "$SCRIPT_DIR/.env" ]; then
+        source "$SCRIPT_DIR/.env"
+    fi
+    
+    local ports=("${HTTP_PORT:-8080}" "${HTTPS_PORT:-8443}" "${PHPMYADMIN_PORT:-8081}" "${MYSQL_PORT:-3307}")
     local busy_ports=()
     
     for port in "${ports[@]}"; do
@@ -57,7 +62,7 @@ check_ports() {
     
     if [ ${#busy_ports[@]} -ne 0 ]; then
         print_error "The following ports are busy: ${busy_ports[*]}"
-        print_error "Please stop services on these ports or modify docker-compose.local.yml"
+        print_error "Please stop services on these ports or customize ports in .env file"
         exit 1
     fi
     print_success "All required ports are available"
@@ -109,20 +114,38 @@ start_services() {
 
 # Function to show service status
 show_status() {
+    # Load environment variables if .env exists
+    if [ -f "$SCRIPT_DIR/.env" ]; then
+        source "$SCRIPT_DIR/.env"
+    fi
+    
+    local http_port=${HTTP_PORT:-8080}
+    local https_port=${HTTPS_PORT:-8443}
+    local phpmyadmin_port=${PHPMYADMIN_PORT:-8081}
+    local mysql_port=${MYSQL_PORT:-3307}
+    local oe_user=${OE_USER:-admin}
+    local oe_pass=${OE_PASS:-admin_password}
+    local mysql_user=${MYSQL_USER:-openemr}
+    local mysql_pass=${MYSQL_PASSWORD:-openemr_user_pass}
+    
     print_status "Service URLs:"
-    echo -e "  ${GREEN}OpenEMR Application:${NC} http://localhost:8080"
-    echo -e "  ${GREEN}OpenEMR HTTPS:${NC}       https://localhost:8443"
-    echo -e "  ${GREEN}phpMyAdmin:${NC}          http://localhost:8081"
+    echo -e "  ${GREEN}OpenEMR Application:${NC} http://localhost:$http_port"
+    echo -e "  ${GREEN}OpenEMR HTTPS:${NC}       https://localhost:$https_port"
+    echo -e "  ${GREEN}phpMyAdmin:${NC}          http://localhost:$phpmyadmin_port"
     echo ""
-    print_status "Default credentials:"
-    echo -e "  ${YELLOW}Username:${NC} admin"
-    echo -e "  ${YELLOW}Password:${NC} admin123"
+    print_status "Credentials:"
+    echo -e "  ${YELLOW}Username:${NC} $oe_user"
+    echo -e "  ${YELLOW}Password:${NC} $oe_pass"
     echo ""
     print_status "Database access:"
-    echo -e "  ${YELLOW}Host:${NC}     localhost:3307"
+    echo -e "  ${YELLOW}Host:${NC}     localhost:$mysql_port"
     echo -e "  ${YELLOW}Database:${NC} openemr"
-    echo -e "  ${YELLOW}Username:${NC} openemr"
-    echo -e "  ${YELLOW}Password:${NC} openemr_pass_2024"
+    echo -e "  ${YELLOW}Username:${NC} $mysql_user"
+    echo -e "  ${YELLOW}Password:${NC} $mysql_pass"
+    echo ""
+    if [ ! -f "$SCRIPT_DIR/.env" ]; then
+        print_warning "No .env file found. Copy .env.example to .env and customize passwords."
+    fi
 }
 
 # Function to stop services

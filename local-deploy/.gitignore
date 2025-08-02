@@ -1,10 +1,15 @@
-# Local deployment files that should not be committed
-*.log
-*.env.local
+# Environment files with sensitive data
 .env
+.env.local
+.env.production
+*.env.local
+
+# Generated files and logs
+*.log
 logs/
 data/
 backups/
+ssl/
 
 # Docker-related files that might be generated
 .docker/
@@ -14,3 +19,8 @@ docker-compose.override.yml
 *.tmp
 *.temp
 .DS_Store
+
+# Generated SSL certificates
+*.crt
+*.key
+*.pem

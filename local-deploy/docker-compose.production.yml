@@ -10,14 +10,14 @@ services:
     container_name: openemr-mysql-prod
     command: ['mariadbd','--character-set-server=utf8mb4','--innodb-buffer-pool-size=512M']
     ports:
-      - "3308:3306"
+      - "${MYSQL_PORT:-3308}:3306"
     volumes:
       - mysql-prod-data:/var/lib/mysql
       - ./config/mysql-prod.cnf:/etc/mysql/conf.d/custom.cnf:ro
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secure_root_pass_2024}
-      MYSQL_DATABASE: openemr
-      MYSQL_USER: openemr
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-openemr}
+      MYSQL_USER: ${MYSQL_USER:-openemr}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-secure_openemr_pass_2024}
     networks:
       - openemr-prod-net
@@ -32,20 +32,20 @@ services:
     image: openemr/openemr:latest
     container_name: openemr-app-prod
     ports:
-      - "8090:80"
-      - "8453:443"
+      - "${HTTP_PORT:-8090}:80"
+      - "${HTTPS_PORT:-8453}:443"
     volumes:
       - sites-prod:/var/www/localhost/htdocs/openemr/sites:rw
       - logs-prod:/var/log
     environment:
       MYSQL_HOST: mysql-prod
       MYSQL_ROOT_PASS: ${MYSQL_ROOT_PASSWORD:-secure_root_pass_2024}
-      MYSQL_USER: openemr
+      MYSQL_USER: ${MYSQL_USER:-openemr}
       MYSQL_PASS: ${MYSQL_PASSWORD:-secure_openemr_pass_2024}
       OE_USER: ${OE_USER:-admin}
       OE_PASS: ${OE_PASS:-secure_admin_pass_2024}
       OPENEMR_DOCKER_ENV_TAG: local-prod-environment
-      OPENEMR_SETTING_site_addr_oath: 'https://localhost:8453'
+      OPENEMR_SETTING_site_addr_oath: 'https://localhost:${HTTPS_PORT:-8453}'
       OPENEMR_SETTING_rest_api: 1
       OPENEMR_SETTING_rest_fhir_api: 1
       # Production security settings
@@ -67,8 +67,8 @@ services:
     image: nginx:alpine
     container_name: openemr-nginx-prod
     ports:
-      - "8091:80"
-      - "8454:443"
+      - "${NGINX_HTTP_PORT:-8091}:80"
+      - "${NGINX_HTTPS_PORT:-8454}:443"
     volumes:
       - ./config/nginx-prod.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
